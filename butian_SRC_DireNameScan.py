@@ -2,6 +2,7 @@ import requests
 from random import choice
 import argparse # 用于命令选项解析
 import json
+import openpyxl
 import random
 from requests.packages import urllib3
 from bs4 import BeautifulSoup
@@ -118,8 +119,26 @@ def company():
 def companyOut(data):
     # print(data)
     Out = "| {0:^6} | {5:<40} | {2:{6}^4} | {3:^10} | {4:^10} | {1:<10}"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+
+    sheetTitleList = ['id','企业名称','类型','已发现/最高赏金','已解决/累计赏金','SRC地址']
+    k = 1
+    for titles in sheetTitleList:
+        ws.cell(row=1, column=k, value=titles)
+        k = k+1
+    row = 2
     for i in data:
-        print(Out.format(i['id'], i['name'], i['type'], i['spp1'], i['spp2'], i['urls'], chr(12288)))
+        ws.cell(row=row, column=1, value=i['id'])
+        ws.cell(row=row, column=2, value=i['name'])
+        ws.cell(row=row, column=3, value=i['type'])
+        ws.cell(row=row, column=4, value=i['spp1'])
+        ws.cell(row=row, column=5, value=i['spp2'])
+        ws.cell(row=row, column=6, value=i['urls'])
+        row = row+1
+
+    wb.save('补天SRC名录表.xlsx')
+
 
 
 def main():
@@ -128,4 +147,6 @@ def main():
 if __name__ == '__main__':
     urllib3.disable_warnings()
     company_data = company()
+    print("###### 数据爬取完成，共计%s条数据 ######"%(str(len(json.loads(company_data)['data']))))
     companyOut(json.loads(company_data)['data'])
+    print("###### 数据保存完成 ######")
